@@ -1,0 +1,24 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    defaultConfig {
+        applicationId "sitinoldae.timeTable"
+        minSdkVersion 15
+        targetSdkVersion 26
+        versionCode 4
+        versionName "1.5"
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.github.yehiahd:FastSave-Android:1.0.4'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+}

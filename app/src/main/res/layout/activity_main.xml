@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@drawable/bgg"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/my_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="5dp"
+        android:textStyle="bold" />
+
+    <ImageButton
+        android:id="@+id/setting_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:background="#0000"
+        android:src="@drawable/ic_settings" />
+
+    <GridView
+        android:id="@+id/grid_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_margin="10dp"
+        android:background="#000"
+        android:gravity="top"
+        android:horizontalSpacing="2dp"
+        android:numColumns="9"
+        android:padding="2dp"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="2dp"></GridView>
+
+    <FrameLayout
+        android:id="@+id/myCustomView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:background="@drawable/bgg">
+
+        <RelativeLayout
+            android:id="@+id/frame_relative__parent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#8fff"
+            android:gravity="center|top"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/my_frame_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:fontFamily="cursive"
+                android:text="Select your Class's Section"
+                android:textSize="30dp" />
+
+            <ListView
+                android:id="@+id/lecture_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/my_frame_title"
+                android:layout_centerVertical="true"
+                android:layout_margin="10dp"
+                android:layout_marginBottom="50dp"
+                android:background="#2000" />
+
+            <Switch
+                android:id="@+id/toggle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_margin="10dp"
+                android:background="#2000"
+                android:padding="10dp"
+                android:text="Never Ask Again?"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/new_ttable_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_margin="8dp"
+                android:background="#2000"
+                android:padding="8dp"
+                android:text="Request new Time-Table"
+                android:textAllCaps="false"
+                android:textStyle="bold" />
+        </RelativeLayout>
+    </FrameLayout>
+</RelativeLayout>
