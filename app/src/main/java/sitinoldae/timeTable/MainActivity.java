@@ -1,9 +1,20 @@
 package sitinoldae.timeTable;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -13,28 +24,56 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.appizona.yehiahd.fastsave.FastSave;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class
+
+MainActivity extends AppCompatActivity {
     String[] sec_a, sec_b, sec_ibm, sec_inorture;
     String toBeInspected = "";
     GridView gv;
     ImageButton settingBtn;
+    RelativeLayout mainRL;
     Button reqest_new_timeTable;
     TextView mytimeview;
     int flag_default = 0;
     FrameLayout myView;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        if (requestCode == 1) {
+            final Bundle extras = data.getExtras();
+            if (extras != null) {
+                //Get image
+                Bitmap newProfilePic = extras.getParcelable("data");
+                Toast.makeText(this, "Working", Toast.LENGTH_SHORT).show();
+                if(isStoragePermissionGranted()==true){
+                storeImage(newProfilePic);}
+                trySettingImage();
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,13 +86,18 @@ public class MainActivity extends AppCompatActivity {
 
         //initialising fastsave library
         FastSave.init(this);
+        isStoragePermissionGranted();
         gv = (GridView) findViewById(R.id.grid_view);
         settingBtn = (ImageButton) findViewById(R.id.setting_btn);
         reqest_new_timeTable = (Button) findViewById(R.id.new_ttable_btn);
         mytimeview = (TextView) findViewById(R.id.my_time);
+        mainRL= (RelativeLayout) findViewById(R.id.main_relative_layout);
 
-        //frame layout used to show/hide choices for lectures
+         //frame layout used to show/hide choices for lectures
         myView = (FrameLayout) findViewById(R.id.myCustomView);
+
+        //trying to set previously set image
+        trySettingImage();
 
         //initializing custom methods
         initArrays();
@@ -106,19 +150,19 @@ public class MainActivity extends AppCompatActivity {
                 "2:20-3:10",
                 "3:10-4:00",
                 "MONDAY",
-                "Eng-LAB",
                 "Economics",
-                "Compiler",
+                "Eng-LAB",
                 "Algorithm",
+                "English",
                 "LUNCH",
                 "Java Lab",
                 "Java Lab",
                 "ERP/M.Comm",
                 "TUESDAY",
-                "Algorithm",
+                "Comp-Arch",
                 "Economics",
                 "Java",
-                "English",
+                "Compiler",
                 "LUNCH",
                 "Algorithm",
                 "Java",
@@ -127,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 "English",
                 "Comp-Arch",
                 "ERP/M.comm",
-                "Comp-Arch",
+                "Algorithm",
                 "LUNCH",
                 "Compiler",
                 "Java",
@@ -242,7 +286,6 @@ public class MainActivity extends AppCompatActivity {
                 "IBM LAB",
                 "LUNCH",
                 "Algo-LAB",
-
                 "Algo-LAB",
                 "-",
                 "TUESDAY",
@@ -325,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
                 "Java",
                 "Data-Cntr",
                 "LUNCH",
-                "Eth-Hack",
+                "Stor-Rec",
                 "Java LAB",
                 "Java LAB",
                 "THURSDAY",
@@ -469,7 +512,107 @@ public class MainActivity extends AppCompatActivity {
                 myView.setVisibility(View.VISIBLE);
             }
         });
+        settingBtn.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                pickImage();
+                return false;
+            }
+        });
     }
+//todo
+    public void pickImage() {
+        Intent intent = new Intent(Intent.ACTION_PICK,
+                MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        intent.putExtra("crop", "true");
+        intent.putExtra("scale", true);
+       /* intent.putExtra("outputX", 256);
+        intent.putExtra("outputY", 256);*/
+        intent.putExtra("aspectX", 2);
+        intent.putExtra("aspectY", 1);
+        intent.putExtra("return-data", true);
+        startActivityForResult(intent, 1);
+    }
+    //method 1
+    private void storeImage(Bitmap image) {
+        File pictureFile = getOutputMediaFile();
+        if (pictureFile == null) {
 
+            return;
+        }
+        try {
+            FileOutputStream fos = new FileOutputStream(pictureFile);
+            image.compress(Bitmap.CompressFormat.PNG, 95, fos);
+            fos.close();
+        } catch (FileNotFoundException e) {
 
+        } catch (IOException e) {
+
+        }
+    }
+    //method 2
+    private  File getOutputMediaFile(){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+        File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/"
+                + getApplicationContext().getPackageName()
+                + "/Files");
+
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                return null;
+            }
+        }
+        // Create a media file name
+        File mediaFile;
+        String mImageName="background.jpg";
+        mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
+        return mediaFile;
+    }
+    //method 3
+    private void trySettingImage()
+    {
+        File mediaStorageDir2 = new File(Environment.getExternalStorageDirectory()
+                + "/Android/data/"
+                + getApplicationContext().getPackageName()
+                + "/Files");
+        File mediaFile2;
+        String mImageName="background.jpg";
+        mediaFile2 = new File(mediaStorageDir2.getPath() + File.separator + mImageName);
+
+        try {
+            Bitmap bitmapfile = BitmapFactory.decodeStream(new FileInputStream(mediaFile2));
+            // TODO: 03-Oct-18
+            Drawable d = new BitmapDrawable(getResources(), bitmapfile);
+            mainRL.setBackgroundDrawable(d);
+            myView.setBackgroundDrawable(d);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+
+    }
+    //check app permissions
+    public  boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                Toast.makeText(getApplicationContext(), "Allow access to Storage", Toast.LENGTH_SHORT).show();
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            return true;
+        }
+    }
 }
