@@ -1,6 +1,7 @@
 package sitinoldae.timeTable;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -14,7 +15,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -24,7 +24,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
@@ -56,6 +55,7 @@ MainActivity extends AppCompatActivity {
     TextView mytimeview;
     int flag_default = 0;
     FrameLayout myView;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_OK) {
@@ -67,9 +67,16 @@ MainActivity extends AppCompatActivity {
                 //Get image
                 Bitmap newProfilePic = extras.getParcelable("data");
                 Toast.makeText(this, "Working", Toast.LENGTH_SHORT).show();
-                if(isStoragePermissionGranted()==true){
-                storeImage(newProfilePic);}
-                trySettingImage();
+                if (isStoragePermissionGranted() == true) {
+                    storeImage(newProfilePic);
+                }
+                //restarting app
+                Intent i = getBaseContext().getPackageManager()
+                        .getLaunchIntentForPackage(getBaseContext().getPackageName());
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                finish();
+                Toast.makeText(getApplicationContext(), "App Restarted", Toast.LENGTH_LONG).show();
+                startActivity(i);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -91,14 +98,13 @@ MainActivity extends AppCompatActivity {
         settingBtn = (ImageButton) findViewById(R.id.setting_btn);
         reqest_new_timeTable = (Button) findViewById(R.id.new_ttable_btn);
         mytimeview = (TextView) findViewById(R.id.my_time);
-        mainRL= (RelativeLayout) findViewById(R.id.main_relative_layout);
+        mainRL = (RelativeLayout) findViewById(R.id.main_relative_layout);
 
-         //frame layout used to show/hide choices for lectures
+        //frame layout used to show/hide choices for lectures
         myView = (FrameLayout) findViewById(R.id.myCustomView);
 
         //trying to set previously set image
         trySettingImage();
-
         //initializing custom methods
         initArrays();
         checkDefaultParams();
@@ -346,7 +352,7 @@ MainActivity extends AppCompatActivity {
                 "3:10-4:00",
                 "MONDAY",
                 "Java",
-                "Library",
+                "DR-BCM",
                 "Eth-Hack",
                 "Data-Cntr",
                 "LUNCH",
@@ -375,7 +381,7 @@ MainActivity extends AppCompatActivity {
                 "Eth-Hack",
                 "Stor-Rec",
                 "Web.T",
-                "DR-BCM",
+                "Library",
                 "LUNCH",
                 "Eth-hk LAB",
                 "Eth-hk LAB",
@@ -397,7 +403,7 @@ MainActivity extends AppCompatActivity {
                 "LUNCH",
                 "Web.T LAB",
                 "Web.T LAB",
-                "Data-Cntr"
+                "-"
         };
     }
 
@@ -424,9 +430,9 @@ MainActivity extends AppCompatActivity {
                 }
                 myView.setVisibility(View.GONE);
                 if (checked.isChecked()) {
-                    FastSave.getInstance().saveString("default_key",data);
-                }else {
-                    FastSave.getInstance().saveString("default_key",null);
+                    FastSave.getInstance().saveString("default_key", data);
+                } else {
+                    FastSave.getInstance().saveString("default_key", null);
                 }
                 initGridviewListener();
             }
@@ -447,7 +453,7 @@ MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-            super.onPause();
+        super.onPause();
     }
 
     void checkDefaultParams() {
@@ -520,25 +526,29 @@ MainActivity extends AppCompatActivity {
             }
         });
     }
-//todo
+
+    //todo
     public void pickImage() {
         Intent intent = new Intent(Intent.ACTION_PICK,
                 MediaStore.Images.Media.INTERNAL_CONTENT_URI);
         intent.setType("image/*");
         intent.putExtra("crop", "true");
         intent.putExtra("scale", true);
-       /* intent.putExtra("outputX", 256);
-        intent.putExtra("outputY", 256);*/
         intent.putExtra("aspectX", 2);
         intent.putExtra("aspectY", 1);
         intent.putExtra("return-data", true);
-        startActivityForResult(intent, 1);
+        try {
+            startActivityForResult(
+                    Intent.createChooser(intent, "Complete action using"),
+                    1);
+        } catch (ActivityNotFoundException e) {
+        }
     }
+
     //method 1
     private void storeImage(Bitmap image) {
         File pictureFile = getOutputMediaFile();
         if (pictureFile == null) {
-
             return;
         }
         try {
@@ -551,8 +561,9 @@ MainActivity extends AppCompatActivity {
 
         }
     }
+
     //method 2
-    private  File getOutputMediaFile(){
+    private File getOutputMediaFile() {
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
         File mediaStorageDir = new File(Environment.getExternalStorageDirectory()
@@ -564,26 +575,26 @@ MainActivity extends AppCompatActivity {
         // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
                 return null;
             }
         }
         // Create a media file name
         File mediaFile;
-        String mImageName="background.jpg";
+        String mImageName = "background.jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + mImageName);
         return mediaFile;
     }
+
     //method 3
-    private void trySettingImage()
-    {
+    private void trySettingImage() {
         File mediaStorageDir2 = new File(Environment.getExternalStorageDirectory()
                 + "/Android/data/"
                 + getApplicationContext().getPackageName()
                 + "/Files");
         File mediaFile2;
-        String mImageName="background.jpg";
+        String mImageName = "background.jpg";
         mediaFile2 = new File(mediaStorageDir2.getPath() + File.separator + mImageName);
 
         try {
@@ -592,15 +603,14 @@ MainActivity extends AppCompatActivity {
             Drawable d = new BitmapDrawable(getResources(), bitmapfile);
             mainRL.setBackgroundDrawable(d);
             myView.setBackgroundDrawable(d);
-        }
-        catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
     }
+
     //check app permissions
-    public  boolean isStoragePermissionGranted() {
+    public boolean isStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED) {
@@ -610,8 +620,7 @@ MainActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
+        } else { //permission is automatically granted on sdk<23 upon installation
             return true;
         }
     }

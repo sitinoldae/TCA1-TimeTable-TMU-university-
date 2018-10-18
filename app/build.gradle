@@ -6,8 +6,8 @@ android {
         applicationId "sitinoldae.timeTable"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 5
-        versionName "1.51"
+        versionCode 7
+        versionName "1.71"
     }
     buildTypes {
         release {
